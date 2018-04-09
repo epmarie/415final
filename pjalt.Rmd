@@ -1,0 +1,126 @@
+---
+title: "Project"
+author: "Brett Roberts"
+date: "4/9/2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(leaps)
+library(glmnet)
+library(boot)
+library(splines)
+library(gam)
+library(randomForest)
+library(e1071)
+library(corrplot)
+library(ggplot2)
+
+```
+
+```{r Data}
+
+Wine <- read.csv(file="winequality-red.csv", header=TRUE, sep=",")
+summary(Wine)
+
+set.seed(1313)
+train_id <-sample(1:nrow(Wine), size = trunc(0.8* nrow(Wine)))
+wine_train <- Wine[train_id,]
+wine_test <- Wine[-train_id,]
+```
+
+
+```{r Explore}
+
+M = cor(Wine)
+corrplot(M, method = "circle")
+
+qplot(Wine$quality, geom="histogram", binwidth = .25)
+
+wine_lm = lm(quality~. + pH:fixed.acidity + pH:citric.acid  + residual.sugar:alcohol + chlorides:sulphates, data = wine_train)
+
+summary(wine_lm)
+
+
+par(mfrow=c(2,2))
+
+boxplot(wine_train$quality,wine_train$fixed.acidity, main = "quality acidity vs fixed.acidity", 
+ylab = "fixed.acidity")
+boxplot(wine_train$quality,wine_train$citric.acid, main = "quality vs citric.acid", ylab = "citric.acid")
+boxplot(wine_train$quality,wine_train$alcohol, main = "quality vs alcohol", ylab = "alcohol")
+boxplot(wine_train$quality,wine_train$sulphates, main = "quality vs sulphates", ylab = "sulphates")
+
+#subset data by quality rating (on x axis) and then do side by side box plots
+
+
+
+```
+
+```{r  Dimension Reduction}
+set.seed(1313)
+train.mat <- model.matrix(quality ~ ., data = wine_train)
+test.mat <- model.matrix(quality ~ ., data = wine_test)
+
+grid <- 10^seq(10, -2, length = 100)
+fit.lasso <- glmnet(train.mat, wine_train$quality, lambda = grid, alpha = 1)
+cv.lasso <- cv.glmnet(train.mat, wine_train$quality, lambda = grid, alpha = 1)
+
+bestlam.lasso <- cv.lasso$lambda.min
+#bestlam.lasso
+
+pred.lasso.train <- predict(fit.lasso, s = bestlam.lasso, newx = train.mat)
+pred.lasso.test <- predict(fit.lasso, s = bestlam.lasso, newx = test.mat)
+
+lasso.MSE.train = mean((pred.lasso.train - wine_train$quality)^2)
+lasso.MSE.test = mean((pred.lasso.test - wine_test$quality)^2)
+lasso.MSE.train; lasso.MSE.test
+
+round(predict(fit.lasso, s = bestlam.lasso, type = "coefficients"),2)
+
+```
+
+```{r Poly}
+
+set.seed(1313)
+cv.error_poly = rep(0,15)
+for (i in 1:15){
+  fit=glm(wine_train$quality~poly(age,i),data=wine_train)
+  cv.error_poly[i]=cv.glm(wine_train, fit, K=10)$delta[1]
+ }
+cv.error_poly
+
+
+```
+
+```{r Bag and RF}
+
+set.seed(1313)
+bag.wine=randomForest(quality~.,data=wine_train,mtry=5,importance=TRUE)
+bag.wine
+
+yhat.bag =predict(bag.wine,newdata=wine_test)
+plot(yhat.bag, wine_test$quality)
+abline(0,1)
+
+mean((yhat.bag-wine_test$quality)^2)
+
+
+rf.wine=randomForest(quality~.,data=wine_train,mtry=5,importance=TRUE)
+yhat.rf = predict(rf.wine,newdata=wine_test)
+mean((yhat.rf-wine_test$quality)^2)
+
+importance(rf.wine)
+varImpPlot(rf.wine)
+```
+
+```{r SVM}
+
+set.seed(1313)
+model <- svm(quality ~. , wine_train)
+predictedY <- predict(model, wine_test[,-12])
+tab <- table(pred = predictedY, true = wine_test[,1])
+tab
+
+```
+
