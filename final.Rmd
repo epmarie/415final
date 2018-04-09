@@ -1,0 +1,32 @@
+---
+title: "Final Project"
+subtitle: "Ellen Paquet Lab 003"
+output: pdf_document
+---
+  
+**Read in Data**
+```{r}
+setwd("C:/Users/epmar/Documents/415final")
+fl_train = read.csv('flights_train.csv')
+fl_test = read.csv('flights_test.csv')
+```
+
+**Set appropriate columns as factors**
+```{r}
+attach(fl_train)
+fl_train$DIVERTED = as.factor(DIVERTED)
+fl_train$AIR_SYSTEM_DELAY = as.factor(AIR_SYSTEM_DELAY)
+fl_train$CANCELLED = as.factor(CANCELLED)
+fl_train$AIRLINE_DELAY = as.factor(AIRLINE_DELAY)
+fl_train$SECURITY_DELAY = as.factor(SECURITY_DELAY)
+fl_train$LATE_AIRCRAFT_DELAY = as.factor(LATE_AIRCRAFT_DELAY)
+fl_train$WEATHER_DELAY = as.factor(WEATHER_DELAY)
+attach(fl_test)
+fl_test$DIVERTED = as.factor(DIVERTED)
+fl_test$AIR_SYSTEM_DELAY = as.factor(AIR_SYSTEM_DELAY)
+fl_test$CANCELLED = as.factor(CANCELLED)
+fl_test$AIRLINE_DELAY = as.factor(AIRLINE_DELAY)
+fl_test$SECURITY_DELAY = as.factor(SECURITY_DELAY)
+fl_test$LATE_AIRCRAFT_DELAY = as.factor(LATE_AIRCRAFT_DELAY)
+fl_test$WEATHER_DELAY = as.factor(WEATHER_DELAY)
+```
