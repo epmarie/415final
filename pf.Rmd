@@ -1,0 +1,130 @@
+---
+title: "project415"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmnet)
+library(SignifReg)
+library(boot)
+library(randomForest)
+library(corrplot)
+library(ggplot2)
+library(GGally)
+```
+
+
+```{r data}
+flights = read.csv("flights.csv");
+flights$columnname = NULL
+flights$TAXI_OUT = NULL
+flights$TAXI_IN = NULL
+flights$WHEELS_ON = NULL
+flights$WHEELS_OFF = NULL
+flights$YEAR = NULL
+flights$TAIL_NUMBER = NULL
+flights$FLIGHT_NUMBER = NULL
+flights$CANCELLATION_REASON = NULL
+```
+
+
+```{r subset}
+
+# top 10 airports
+includedAirports = c("ATL","LAX","ORD","DFW","JFK","DEN","SFO","LAS","CLT","SEA")
+
+flights = subset(flights, DESTINATION_AIRPORT %in% includedAirports)
+flights = subset(flights, ORIGIN_AIRPORT %in% includedAirports)
+
+# most used airlines
+includeddAirlines = c("AA","UA","DL","WN","AS", "OO")
+flights = subset(flights, AIRLINE %in% excludedAirlines)
+```
+
+
+
+```{r info}
+flights$WEATHER_DELAY= ifelse(flights$WEATHER_DELAY > 0 & !is.na(flights$WEATHER_DELAY), 1, 0)
+flights$WEATHER_DELAY = as.factor(flights$WEATHER_DELAY)
+
+flights$LATE_AIRCRAFT_DELAY= ifelse(flights$LATE_AIRCRAFT_DELAY > 0 & !is.na(flights$LATE_AIRCRAFT_DELAY), 1, 0)
+flights$LATE_AIRCRAFT_DELAY = factor(flights$LATE_AIRCRAFT_DELAY)
+
+flights$AIRLINE_DELAY= ifelse(flights$AIRLINE_DELAY > 0 & !is.na(flights$AIRLINE_DELAY), 1, 0)
+flights$AIRLINE_DELAY = as.factor(flights$AIRLINE_DELAY)
+
+flights$SECURITY_DELAY= ifelse(flights$SECURITY_DELAY > 0 & !is.na(flights$SECURITY_DELAY), 1, 0)
+flights$SECURITY_DELAY = as.factor(flights$SECURITY_DELAY)
+
+flights$AIR_SYSTEM_DELAY= ifelse(flights$AIR_SYSTEM_DELAY > 0 & !is.na(flights$AIR_SYSTEM_DELAY), 1, 0)
+flights$AIR_SYSTEM_DELAY = as.factor(flights$AIR_SYSTEM_DELAY)
+
+
+flights$CANCELLED = as.factor(flights$CANCELLED)
+flights$DIVERTED = as.factor(flights$DIVERTED)
+
+flights$AIRLINE = as.factor(flights$AIRLINE)
+flights$ORIGIN_AIRPORT = as.factor(flights$ORIGIN_AIRPORT)
+flights$DESTINATION_AIRPORT = as.factor(flights$DESTINATION_AIRPORT)
+
+summary(flights)
+```
+
+
+```{r split}
+set.seed(1313)
+reduced_id = sample(1:nrow(flights), size = trunc(0.05*nrow(flights)))
+flights = flights[reduced_id]
+
+
+
+train_id = sample(1:nrow(flights), size = trunc(0.8*nrow(flights)))
+flights_train = flights_data[train_id,]
+flights_test = flights_data[-train_id,]
+```
+
+
+
+```{r explore}
+set.seed(1313)
+
+train_mat = model.matrix(CANCELLED~., data = flights_train)
+train_mat = model.matrix(CANCELLED~., data = flights_test)
+
+
+flights_numeric <- unlist(lapply(flights, is.numeric))  
+flights_numeric
+
+ggcorr(train_mat)
+
+
+
+
+
+
+```
+
+
+```{r models}
+set.seed(1313)
+
+
+
+
+
+
+
+#grid=10^seq(10,-2,length=100)
+#fit.lasso=glmnet(train.mat, flights_train$CANCELLED, lambda = grid, alpha = 1)
+#cv.lasso = cv.glmnet(train.mat, flights_train$CANCELLED, lambda = grid, alpha = 1)
+
+
+
+
+
+
+
+
+
+```
